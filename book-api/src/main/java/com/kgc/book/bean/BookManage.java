@@ -57,4 +57,15 @@ public class BookManage implements Serializable {
     public void setbType(Integer bType) {
         this.bType = bType;
     }
+
+    @Override
+    public String toString() {
+        return "BookManage{" +
+                "bId=" + bId +
+                ", bName='" + bName + '\'' +
+                ", bAuthor='" + bAuthor + '\'' +
+                ", bTime=" + bTime +
+                ", bType=" + bType +
+                '}';
+    }
 }

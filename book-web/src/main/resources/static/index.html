@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div id="vuebox">
+    <div class="container">
+            <!--数据列表-->
+            <div class="row">
+                <div class="center-block text-center">
+                    <h2>图书信息</h2>
+                    <a href="javascript:void (0)" @click="openAdd()">新增图书信息</a>
+                    <table class="table table-bordered">
+                        <tr>
+                            <td>图书名称</td>
+                            <td>图书作者</td>
+                            <td>购买日期</td>
+                            <td>图书分类</td>
+                            <td>操作</td>
+                        </tr>
+                        <tr v-for="item in booklist">
+                            <td>{{item.bName}}</td>
+                            <td>{{item.bAuthor}}</td>
+                            <td>{{item.bTime}}</td>
+                            <td><b v-if="item.bType==1">计算机/软件</b>
+                                <b v-if="item.bType==2">小说/文摘</b>
+                                <b v-if="item.bType==3">杂项</b>
+                            </td>
+                            <td>
+                                <a href="javascript:void (0)" @click="del(item.bId)">删除</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        <!-- 添加模态框-->
+        <div class="modal fade" id="AddModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h4 class="modal-title" id="myModalLabel">新增图书信息</h4>
+                    </div>
+                    <div class="modal-body">
+                        <label>图书名称:</label><input type="text" class="form-control" v-model="book.bName"/><br/>
+                        <label>图书作者:</label><input type="text" class="form-control" v-model="book.bAuthor"><br/>
+                        <label>购买日期:</label><input type="text" class="form-control" v-model="book.bTime"><br/>
+                        <label>图书类型:</label>
+                        <select v-model="book.bType">
+                            <option value="0">请选择</option>
+                            <option value="1">计算机/软件</option>
+                            <option value="2">小说/文摘</option>
+                            <option value="3">杂项</option>
+                        </select><br/>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                        <a href="#" class="btn btn-primary" @click="save()">提交更改</a>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/javascript">
+    var vm=new Vue({
+        el:"#vuebox",
+        data:{
+
+            booklist:[],
+            book:{bName:null,bAuthor:null,bTime:null,bType:0}
+        },
+        mounted(){
+            this.querylist();
+        },
+        methods:{
+            querylist:function () {
+                axios({url:"/book/list", method:"post",
+                    params:{}})
+                    .then(res=>{this.booklist=res.data});
+            },
+            del:function (id) {
+                if(confirm("要删除?")){
+                    axios({url:"/book/del/By/id",method: "get",params: {id:id}}).then(res=>{
+                        if(res.data==1){
+                            alert("操作成功!");
+                            this.querylist();
+                        }else{
+                            alert("出错");
+                        }
+                    })
+                }
+            },
+            openAdd:function () {
+                $("#AddModal").modal("show");
+            }
+            ,
+            save:function () {
+                if(this.book.bName==null){
+                    alert("请填写书名!");
+                    return false;
+                }
+                if(this.book.bType==0){
+                    alert("请选择类型!");
+                    return false;
+                }
+                axios.post("/book/save",this.book).then(res=>{
+                    if(res.data!=null){
+                        alert("添加图书成功!");
+                        this.book={bName:null,bAuthor:null,bTime:null,bType:0}
+                        this.querylist();
+                        $("#AddModal").modal("hide");
+                    }else{
+                        alert("添加图书失败!");
+                    }
+                })
+            }
+        }
+    })
+</script>
